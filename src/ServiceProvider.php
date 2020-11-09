@@ -2,7 +2,7 @@
 
 namespace Butler\Audit;
 
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Support\Str;
 
@@ -16,7 +16,7 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(Auditor::class, fn () => new Auditor(app('butler-audit-correlation-id')));
 
-        Http::macro('withCorrelationId', fn () => $this->withHeaders([
+        PendingRequest::macro('withCorrelationId', fn () => $this->withHeaders([
             'X-Correlation-ID' => app('butler-audit-correlation-id'),
         ]));
     }
