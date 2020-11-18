@@ -135,6 +135,32 @@ Http::withCorrelationId()->post('https://service-b.example/welcome-email', $user
 audit($user)->welcomed();
 ```
 
+## AuditorFake
+
+Instead of [faking the queue](https://laravel.com/docs/master/mocking#queue-fake) in your tests and e.g. `Queue::assertPushed(function (AuditJob) {})` you can use the [AuditorFake](src/Testing/AuditorFake.php).
+
+```php
+public function test_welcome_user()
+{
+    Auditor::fake();
+
+    // Assert that nothing was logged...
+    Auditor::nothingLogged();
+
+    // Perform user welcoming...
+
+    // Assert a event was logged...
+    Auditor::assertLogged('user.welcomed');
+
+    // Assert a event with context, initiator and entity was logged...
+    Auditor::assertLogged('user.welcomed', fn (AuditData $audit)
+        => $audit->initiator === 'service-a'
+        && $audit->hasEntity('user', 1)
+        && $audit->hasEventContext('months', 12)
+    );
+}
+```
+
 ## Testing
 
 ```shell

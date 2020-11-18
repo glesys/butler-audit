@@ -124,7 +124,7 @@ class Auditor implements ArrayAccess
         throw_unless($this->entities, Exception::class, 'At least one entity is required.');
         throw_unless($this->initiator ?? false, Exception::class, 'Initiator is required.');
 
-        AuditJob::dispatch([
+        $this->dispatch([
             'correlationId' => $this->correlationId,
             'entities' => $this->entities,
             'event' => $this->event,
@@ -133,6 +133,11 @@ class Auditor implements ArrayAccess
             'initiatorContext' => $this->initiatorContext,
             'occurredAt' => now()->toRfc3339String(),
         ]);
+    }
+
+    protected function dispatch(array $data): void
+    {
+        AuditJob::dispatch($data);
     }
 
     public function offsetSet($offset, $value): void
