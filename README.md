@@ -62,7 +62,7 @@ When developing you can use the log driver to prevent http requests being sent.
 BUTLER_AUDIT_DRIVER=log
 ```
 
-### Initator resolver
+### Initiator resolver
 
 Set a "initiator resolver" for your application to avoid setting initiator
 manually for every audit call.
