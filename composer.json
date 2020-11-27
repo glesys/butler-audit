@@ -26,7 +26,7 @@
     "license": "MIT",
     "name": "glesys/butler-audit",
     "require": {
-        "php": "^7.4",
+        "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "illuminate/bus": "^8.0",
         "illuminate/contracts": "^8.0",
