@@ -23,6 +23,8 @@ class Auditor extends Facade
 {
     protected static function getFacadeAccessor()
     {
+        self::clearResolvedInstance(AuditorClass::class);
+
         return AuditorClass::class;
     }
 
