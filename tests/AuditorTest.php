@@ -2,359 +2,123 @@
 
 namespace Butler\Audit\Tests;
 
+use Butler\Audit\Audit;
 use Butler\Audit\Auditor;
-use Butler\Audit\Contracts\Auditable;
-use Butler\Audit\Jobs\Audit as AuditJob;
-use Exception;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Queue;
+use Butler\Audit\Testing\AuditData;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class AuditorTest extends AbstractTestCase
 {
-    public function setUp(): void
+    public function test_assertLogged_happy_path()
     {
-        parent::setUp();
+        $this->makeAuditor()->assertLogged('eventName');
 
-        Carbon::setTestNow('2020-07-01 12:00:00');
-
-        Queue::fake();
+        $this->makeAuditor()->assertLogged('eventName', function ($data) {
+            return $data->initiator === 'phpunit';
+        });
     }
 
-    /**
-     * @dataProvider entityProvider
-     */
-    public function test_entity($type, $id, $expectedEntities)
+    public function test_assertLogged_sad_path()
     {
-        $auditor = $this->makeAuditor()->entity($type, $id);
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessage('The expected audit event [foobar] was not logged.');
 
-        $this->assertEquals($expectedEntities, $auditor['entities']);
+        $this->makeAuditor()->assertLogged('foobar');
     }
 
-    public function entityProvider()
+    public function test_assertNotLogged_happy_path()
     {
-        return [
-            'string type and string id' => [
-                'foo',
-                'bar',
-                [['type' => 'foo', 'identifier' => 'bar']],
-            ],
-            'string type and array of ids' => [
-                'foo',
-                [1, 2],
-                [
-                    ['type' => 'foo', 'identifier' => 1],
-                    ['type' => 'foo', 'identifier' => 2],
-                ],
-            ],
-            'Auditable type' => [
-                $this->makeAuditable('foo', 123),
-                null,
-                [['type' => 'foo', 'identifier' => 123]],
-            ],
-            'array with string key and string value' => [
-                ['foo' => 'bar'],
-                null,
-                [['type' => 'foo', 'identifier' => 'bar']],
-            ],
-            'array with string type and array values' => [
-                ['foo' => [1, 2]],
-                null,
-                [
-                    ['type' => 'foo', 'identifier' => 1],
-                    ['type' => 'foo', 'identifier' => 2],
-                ],
-            ],
-            'array with Auditables' => [
-                [
-                    $this->makeAuditable('server', 123),
-                    $this->makeAuditable('backup', 'abc'),
-                ],
-                null,
-                [
-                    ['type' => 'server', 'identifier' => 123],
-                    ['type' => 'backup', 'identifier' => 'abc'],
-                ],
-            ],
-        ];
+        $this->makeAuditor()->assertNotLogged('foobar');
+
+        $this->makeAuditor()->assertNotLogged('eventName', function ($data) {
+            return $data->initiator === 'foobar';
+        });
     }
 
-    public function test_entity_throws_exception_if_used_incorreclty()
+    public function test_assertNotLogged_sad_path()
     {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Invalid entity.');
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessage('A unexpected audit event [eventName] was logged.');
 
-        $this->makeAuditor()->entity('foo');
+        $this->makeAuditor()->assertNotLogged('eventName');
     }
 
-    public function test_event()
+    public function test_assertNothingLogged_happy_path()
     {
-        $auditor = $this->makeAuditor()->event('name');
-
-        $this->assertEquals('name', $auditor['event']);
+        tap(new Auditor())->fake()->assertNothingLogged();
     }
 
-    public function test_event_with_context()
+    public function test_assertNothingLogged_sad_path()
     {
-        $auditor = $this->makeAuditor()->event('name', ['foo' => 'bar']);
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessage('Audit events were logged unexpectedly.');
 
-        $this->assertEquals('name', $auditor['event']);
-        $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $auditor['eventContext']);
+        $this->makeAuditor()->assertNothingLogged();
     }
 
-    public function test_eventContext()
+    public function test_recorded_with_string()
     {
-        $auditor = $this->makeAuditor()->eventContext('foo', 'bar');
+        $result = $this->makeAuditor()->recorded('eventName');
 
-        $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $auditor['eventContext']);
+        $this->assertInstanceOf(Collection::class, $result);
+        $this->assertEquals(1, $result->count());
     }
 
-    public function test_initiator()
+    public function test_recorded_with_callback()
     {
-        $auditor = $this->makeAuditor()->initiator('api');
+        $result = $this->makeAuditor()->recorded(
+            'eventName',
+            fn (AuditData $data) => $data->initiator === 'phpunit'
+        );
 
-        $this->assertEquals('api', $auditor['initiator']);
+        $this->assertInstanceOf(Collection::class, $result);
+        $this->assertEquals(1, $result->count());
     }
 
-    public function test_initiator_with_context()
+    public function test_correlationId_returns_value_from_http_header()
     {
-        $auditor = $this->makeAuditor()->initiator('api', ['foo' => 'bar']);
+        request()->headers->set('X-Correlation-ID', $uuid = Str::uuid());
 
-        $this->assertEquals('api', $auditor['initiator']);
-        $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $auditor['initiatorContext']);
+        $this->assertEquals($uuid, $this->makeAuditor()->correlationId());
     }
 
-    public function test_initiatorContext()
+    public function test_correlationId_returns_uuid_if_http_header_is_not_set()
     {
-        $auditor = $this->makeAuditor()->initiatorContext('foo', 'bar');
-
-        $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $auditor['initiatorContext']);
+        $this->assertTrue(Str::isUuid($this->makeAuditor()->correlationId()));
     }
 
-    public function test_initiatorResolver_is_used_when_set_by_setInitiatorResolver()
+    public function test_correlationId_can_be_resetted()
     {
-        Auditor::setInitiatorResolver(fn () => ['api', ['ip' => '1.2.3.4']]);
-
         $auditor = $this->makeAuditor();
 
-        $this->assertEquals('api', $auditor['initiator']);
-        $this->assertEquals([['key' => 'ip', 'value' => '1.2.3.4']], $auditor['initiatorContext']);
+        $id1 = $auditor->correlationId();
+        $id2 = $auditor->correlationId(null);
+
+        $this->assertTrue(Str::isUuid($id1));
+        $this->assertTrue(Str::isUuid($id2));
+        $this->assertNotEquals($id1, $id2);
     }
 
-    public function test_initiator_can_be_overriden_when_initiatorResolver_is_used()
+    public function test_correlationId_can_be_set_manually()
     {
-        Auditor::setInitiatorResolver(fn () => ['api1']);
+        $auditor = $this->makeAuditor();
 
-        $auditor = $this->makeAuditor()->initiator('api2');
-
-        $this->assertEquals('api2', $auditor['initiator']);
+        $this->assertEquals('not a uuid', $auditor->correlationId('not a uuid'));
+        $this->assertEquals('not a uuid', $auditor->correlationId());
     }
 
-    public function test_log_queues_job_with_correct_data()
+    private function makeAuditor(): Auditor
     {
-        $this->makeAuditor()
+        $auditor = (new Auditor())->fake();
+
+        (new Audit($auditor))
             ->entity('entityType', 'entity-id')
-            ->event('foobarbaz', ['foo' => 'bar'])
-            ->eventContext('foo', 'baz')
-            ->initiator('api', ['ip' => '1.2.3.4'])
-            ->initiatorContext('userAgent', 'lynx')
+            ->event('eventName')
+            ->initiator('phpunit')
             ->log();
 
-        Queue::assertPushed(fn (AuditJob $job) => $job->data === [
-            'correlationId' => 'uuid',
-            'entities' => [
-                [
-                    'type' => 'entityType',
-                    'identifier' => 'entity-id',
-                ],
-            ],
-            'event' => 'foobarbaz',
-            'eventContext' => [
-                [
-                    'key' => 'foo',
-                    'value' => 'bar',
-                ],
-                [
-                    'key' => 'foo',
-                    'value' => 'baz',
-                ],
-            ],
-            'initiator' => 'api',
-            'initiatorContext' => [
-                [
-                    'key' => 'ip',
-                    'value' => '1.2.3.4',
-                ],
-                [
-                    'key' => 'userAgent',
-                    'value' => 'lynx',
-                ],
-            ],
-            'occurredAt' => now()->toRfc3339String(),
-        ]);
-    }
-
-    public function test_log_can_set_event_and_eventContext()
-    {
-        $auditor = $this->makeAuditor()
-            ->event('event1')
-            ->initiator('api')
-            ->entity('type', 'id');
-
-        $auditor->log('event2', ['foo' => 'bar']);
-
-        $this->assertEquals('event2', $auditor['event']);
-        $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $auditor['eventContext']);
-
-        Queue::assertPushed(AuditJob::class);
-    }
-
-    public function test_log_throws_exception_if_event_is_empty()
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Event is required.');
-
-        $this->makeAuditor()->log();
-
-        Queue::assertNothingPushed();
-    }
-
-    public function test_log_throws_exception_if_entities_is_empty()
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('At least one entity is required.');
-
-        $this->makeAuditor()
-            ->event('foo')
-            ->log();
-
-        Queue::assertNothingPushed();
-    }
-
-    public function test_log_throws_exception_if_initiator_is_empty()
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Initiator is required.');
-
-        $this->makeAuditor()
-            ->event('foo')
-            ->entity('type', 'id')
-            ->log();
-
-        Queue::assertNothingPushed();
-    }
-
-    public function test_ArrayAccess_offsetSet_throws_exception()
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Auditor data may not be mutated using array access.');
-
-        $this->makeAuditor()['correlationId'] = null;
-    }
-
-    public function test_ArrayAccess_offsetExists()
-    {
-        $this->assertTrue(isset($this->makeAuditor()['correlationId']));
-    }
-
-    public function test_ArrayAccess_offsetUnset_throws_exception()
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Auditor data may not be mutated using array access.');
-
-        unset($this->makeAuditor()['correlationId']);
-    }
-
-    public function test_ArrayAccess_offsetGet()
-    {
-        $this->assertEquals('uuid', $this->makeAuditor()['correlationId']);
-        $this->assertNull($this->makeAuditor()['foobar']);
-    }
-
-    public function test_magic_call_sets_prefixed_event_and_eventContext()
-    {
-        $auditor = $this->makeAuditor()
-            ->entity('entityType', 'entityId')
-            ->initiator('api');
-
-        $auditor->fooBar(['contextKey' => 'context value']);
-
-        $this->assertEquals('entityType.fooBar', $auditor['event']);
-        $this->assertEquals(
-            [['key' => 'contextKey', 'value' => 'context value']],
-            $auditor['eventContext']
-        );
-
-        Queue::assertPushed(AuditJob::class);
-    }
-
-    public function test_magic_call_handles_Collection_as_context()
-    {
-        $auditor = $this->makeAuditor()
-            ->entity('entityType', 'entityId')
-            ->initiator('api');
-
-        $auditor->fooBar(collect(['contextKey' => 'context value']));
-
-        $this->assertEquals(
-            [['key' => 'contextKey', 'value' => 'context value']],
-            $auditor['eventContext']
-        );
-
-        Queue::assertPushed(AuditJob::class);
-    }
-
-    public function test_magic_call_with_two_entities_with_same_type_prefixes_event()
-    {
-        $auditor = $this->makeAuditor()
-            ->entity('foo', 1)
-            ->entity('foo', 2)
-            ->initiator('api');
-
-        $auditor->barBaz();
-
-        $this->assertEquals('foo.barBaz', $auditor['event']);
-
-        Queue::assertPushed(AuditJob::class);
-    }
-
-    public function test_magic_call_with_two_entities_with_different_type_dont_prefixes_event()
-    {
-        $auditor = $this->makeAuditor()
-            ->entity('foo', 1)
-            ->entity('bar', 2)
-            ->initiator('api');
-
-        $auditor->baz();
-
-        $this->assertEquals('baz', $auditor['event']);
-
-        Queue::assertPushed(AuditJob::class);
-    }
-
-    private function makeAuditor(string $correlationId = 'uuid'): Auditor
-    {
-        return new Auditor($correlationId);
-    }
-
-    private function makeAuditable(string $type = 'type', $identifier = 1): Auditable
-    {
-        return new class ($type, $identifier) implements Auditable
-        {
-            public function __construct(string $type, $identifier)
-            {
-                $this->type = $type;
-                $this->identifier = $identifier;
-            }
-
-            public function auditorType(): string
-            {
-                return $this->type;
-            }
-
-            public function auditorIdentifier()
-            {
-                return $this->identifier;
-            }
-        };
+        return $auditor;
     }
 }
