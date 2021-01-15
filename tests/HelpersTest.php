@@ -2,16 +2,16 @@
 
 namespace Butler\Audit\Tests;
 
-use Butler\Audit\Auditor;
+use Butler\Audit\Audit;
 
 class HelpersTest extends AbstractTestCase
 {
     public function test_audit()
     {
-        $auditor = audit('foo', 'bar');
+        $audit = audit('foo', 'bar');
 
-        $this->assertInstanceOf(Auditor::class, $auditor);
+        $this->assertInstanceOf(Audit::class, $audit);
 
-        $this->assertEquals([['type' => 'foo', 'identifier' => 'bar']], $auditor['entities']);
+        $this->assertEquals([['type' => 'foo', 'identifier' => 'bar']], $audit['entities']);
     }
 }

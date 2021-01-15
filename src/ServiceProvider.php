@@ -4,20 +4,14 @@ namespace Butler\Audit;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Illuminate\Support\Str;
+use Butler\Audit\Facades\Auditor;
 
 class ServiceProvider extends BaseServiceProvider
 {
     public function register()
     {
-        $this->app->singleton('butler-audit-correlation-id', function () {
-            return request()->header('X-Correlation-ID', (string) Str::uuid());
-        });
-
-        $this->app->bind(Auditor::class, fn () => new Auditor(app('butler-audit-correlation-id')));
-
         PendingRequest::macro('withCorrelationId', fn () => $this->withHeaders([
-            'X-Correlation-ID' => app('butler-audit-correlation-id'),
+            'X-Correlation-ID' => Auditor::correlationId(),
         ]));
     }
 

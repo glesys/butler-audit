@@ -2,7 +2,7 @@
 
 namespace Butler\Audit\Tests;
 
-use Butler\Audit\Auditor;
+use Butler\Audit\Audit;
 use Butler\Audit\ServiceProvider;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
 
@@ -12,7 +12,7 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
     {
         parent::setUp();
 
-        Auditor::unsetInitiatorResolver();
+        Audit::unsetInitiatorResolver();
     }
 
     protected function getServiceProviderClass($app)

@@ -2,7 +2,7 @@
 
 namespace Butler\Audit\Tests;
 
-use Butler\Audit\Auditor;
+use Butler\Audit\Facades\Auditor;
 use GrahamCampbell\TestBenchCore\ServiceProviderTrait;
 
 class ServiceProviderTest extends AbstractTestCase
