@@ -58,6 +58,19 @@ class AuditorTest extends AbstractTestCase
         $this->makeAuditor()->assertNothingLogged();
     }
 
+    public function test_assertLoggedCount_happy_path()
+    {
+        $this->makeAuditor()->assertLoggedCount(1);
+    }
+
+    public function test_assertLoggedCount_sad_path()
+    {
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessage('Failed asserting that actual size 1 matches expected size 2.');
+
+        $this->makeAuditor()->assertLoggedCount(2);
+    }
+
     public function test_recorded_with_string()
     {
         $result = $this->makeAuditor()->recorded('eventName');
