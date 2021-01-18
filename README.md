@@ -69,7 +69,7 @@ manually for every audit call.
 You can still use `initiator()` and `initiatorContext()` to override the values set by the resolver.
 
 ```php
-Auditor::setInitiatorResolver(fn () => [
+Auditor::initiatorResolver(fn () => [
     auth()->id(),
     [
         'ip' => request()->ip(),

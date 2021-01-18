@@ -122,6 +122,25 @@ class AuditorTest extends AbstractTestCase
         $this->assertEquals('not a uuid', $auditor->correlationId());
     }
 
+    public function test_initiatorResolver_can_be_set()
+    {
+        $auditor = $this->makeAuditor();
+
+        $auditor->initiatorResolver(fn () => ['foo', 'bar']);
+
+        $this->assertEquals(['foo', 'bar'], value($auditor->initiatorResolver()));
+    }
+
+    public function test_initiatorResolver_can_be_unset()
+    {
+        $auditor = $this->makeAuditor();
+
+        $auditor->initiatorResolver(fn () => ['foo']);
+        $auditor->initiatorResolver(null);
+
+        $this->assertNull($auditor->initiatorResolver());
+    }
+
     private function makeAuditor(): Auditor
     {
         $auditor = (new Auditor())->fake();
