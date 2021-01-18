@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Butler\Audit\Audit initiatorContext(string $key, mixed $value)
  * @method static void log(Audit $audit)
  * @method static void assertLogged(string $eventName, \Closure $callback = null)
+ * @method static void assertLoggedCount(int $count)
  * @method static void assertNotLogged(string $eventName, \Closure $callback = null)
  * @method static void assertNothingLogged()
  *
