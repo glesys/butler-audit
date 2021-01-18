@@ -121,23 +121,28 @@ class AuditTest extends AbstractTestCase
         $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $audit['initiatorContext']);
     }
 
-    public function test_initiatorResolver_is_used_when_set_by_setInitiatorResolver()
+    public function test_initiatorResolver_is_used_when_set()
     {
-        Audit::setInitiatorResolver(fn () => ['api', ['ip' => '1.2.3.4']]);
+        Auditor::initiatorResolver(fn () => ['api', ['ip' => '1.2.3.4']]);
 
-        $audit = $this->makeAudit();
+        $array = $this->makeAudit()->event('foo')->entity('bar', 1)->toArray();
 
-        $this->assertEquals('api', $audit['initiator']);
-        $this->assertEquals([['key' => 'ip', 'value' => '1.2.3.4']], $audit['initiatorContext']);
+        $this->assertEquals('api', $array['initiator']);
+        $this->assertEquals([['key' => 'ip', 'value' => '1.2.3.4']], $array['initiatorContext']);
     }
 
     public function test_initiator_can_be_overriden_when_initiatorResolver_is_used()
     {
-        Audit::setInitiatorResolver(fn () => ['api1']);
+        Auditor::initiatorResolver(fn () => ['api1']);
 
-        $audit = $this->makeAudit()->initiator('api2');
+        $array = $this->makeAudit()
+            ->event('foo')
+            ->entity('bar', 1)
+            ->initiator('api2', ['ip' => '2.3.4.5'])
+            ->toArray();
 
-        $this->assertEquals('api2', $audit['initiator']);
+        $this->assertEquals('api2', $array['initiator']);
+        $this->assertEquals([['key' => 'ip', 'value' => '2.3.4.5']], $array['initiatorContext']);
     }
 
     public function test_log_sends_correct_data_to_auditor()

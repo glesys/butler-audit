@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `Auditor` to `Audit`
 - The facade returns the new `Auditor` class instead of `Audit`
 - The correlation id is fetched from `Auditor` instead of container.
+- **BREAKING**: Moved `initiatorResolver` from `Audit` to `Auditor`.
 
 ### Removed
 - `AuditorFake`

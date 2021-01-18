@@ -4,7 +4,6 @@ namespace Butler\Audit;
 
 use ArrayAccess;
 use Butler\Audit\Contracts\Auditable;
-use Closure;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -22,15 +21,9 @@ class Audit implements ArrayAccess
     private string $initiator;
     private array $initiatorContext = [];
 
-    private static $initiatorResolver;
-
     public function __construct(Auditor $auditor)
     {
         $this->auditor = $auditor;
-
-        if (isset(static::$initiatorResolver)) {
-            $this->initiator(...call_user_func(static::$initiatorResolver));
-        }
     }
 
     /**
@@ -103,16 +96,6 @@ class Audit implements ArrayAccess
         return $this;
     }
 
-    public static function setInitiatorResolver(Closure $resolver): void
-    {
-        static::$initiatorResolver = $resolver;
-    }
-
-    public static function unsetInitiatorResolver(): void
-    {
-        static::$initiatorResolver = null;
-    }
-
     public function log(string $event = null, array $eventContext = []): void
     {
         if ($event) {
@@ -144,6 +127,10 @@ class Audit implements ArrayAccess
 
     public function toArray(): array
     {
+        if (empty($this->initiator) and $resolver = $this->auditor->initiatorResolver()) {
+            $this->initiator(...call_user_func($resolver));
+        }
+
         throw_unless($this->event ?? false, Exception::class, 'Event is required.');
         throw_unless($this->entities, Exception::class, 'At least one entity is required.');
         throw_unless($this->initiator ?? false, Exception::class, 'Initiator is required.');

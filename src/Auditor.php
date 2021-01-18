@@ -32,6 +32,8 @@ class Auditor
 
     protected array $recorded = [];
 
+    private $initiatorResolver;
+
     public function fake()
     {
         $this->recording = true;
@@ -93,6 +95,15 @@ class Auditor
         }
 
         return $this->correlationId ??= request()->header('X-Correlation-ID', (string) Str::uuid());
+    }
+
+    public function initiatorResolver(?Closure $resolver = null): ?Closure
+    {
+        if (func_num_args() === 1) {
+            $this->initiatorResolver = $resolver;
+        }
+
+        return $this->initiatorResolver;
     }
 
     public function __call($method, $parameters)

@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static void assertLogged(string $eventName, \Closure $callback = null)
  * @method static void assertNotLogged(string $eventName, \Closure $callback = null)
  * @method static void assertNothingLogged()
+ * @method static void assertLoggedCount(int $count)
+ * @method static string correlationId(?string $correlationId = null)
+ * @method static ?\Closure initiatorResolver(?\Closure $resolver)
  *
  * @see \Butler\Audit\Auditor
  */
