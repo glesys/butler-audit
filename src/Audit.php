@@ -73,6 +73,10 @@ class Audit implements ArrayAccess
 
     public function eventContext(string $key, $value = null): self
     {
+        if (! is_null($value) && ! is_scalar($value)) {
+            throw new Exception('Event context value must be null or scalar.');
+        }
+
         $this->eventContext[] = compact('key', 'value');
 
         return $this;
@@ -91,6 +95,10 @@ class Audit implements ArrayAccess
 
     public function initiatorContext(string $key, $value = null): self
     {
+        if (! is_null($value) && ! is_scalar($value)) {
+            throw new Exception('Initiator context value must be null or scalar.');
+        }
+
         $this->initiatorContext[] = compact('key', 'value');
 
         return $this;
