@@ -92,11 +92,24 @@ class AuditTest extends AbstractTestCase
         $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $audit['eventContext']);
     }
 
-    public function test_eventContext()
+    public function test_eventContext_with_valid_values()
     {
         $audit = $this->makeAudit()->eventContext('foo', 'bar');
-
         $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $audit['eventContext']);
+
+        $audit = $this->makeAudit()->eventContext('foo', 123);
+        $this->assertEquals([['key' => 'foo', 'value' => 123]], $audit['eventContext']);
+
+        $audit = $this->makeAudit()->eventContext('foo', null);
+        $this->assertEquals([['key' => 'foo', 'value' => null]], $audit['eventContext']);
+    }
+
+    public function test_eventContext_throws_exception_for_invalid_value()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Event context value must be null or scalar.');
+
+        $this->makeAudit()->eventContext('foo', ['bar' => 'baz']);
     }
 
     public function test_initiator()
@@ -114,11 +127,24 @@ class AuditTest extends AbstractTestCase
         $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $audit['initiatorContext']);
     }
 
-    public function test_initiatorContext()
+    public function test_initiatorContext_with_valid_values()
     {
         $audit = $this->makeAudit()->initiatorContext('foo', 'bar');
-
         $this->assertEquals([['key' => 'foo', 'value' => 'bar']], $audit['initiatorContext']);
+
+        $audit = $this->makeAudit()->initiatorContext('foo', 123);
+        $this->assertEquals([['key' => 'foo', 'value' => 123]], $audit['initiatorContext']);
+
+        $audit = $this->makeAudit()->initiatorContext('foo', null);
+        $this->assertEquals([['key' => 'foo', 'value' => null]], $audit['initiatorContext']);
+    }
+
+    public function test_initiatorContext_throws_exception_for_invalid_value()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Initiator context value must be null or scalar.');
+
+        $this->makeAudit()->initiatorContext('foo', ['bar' => 'baz']);
     }
 
     public function test_initiatorResolver_is_used_when_set()
