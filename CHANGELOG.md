@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.3.0] - 2021-02-04
+
 ### Changed
 
 - **BREAKING:**: Event and initiator context value must be null or scalar.
