@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class IsAuditableTest extends AbstractTestCase
 {
-    private function makeAuditable(): object
+    private function makeAuditable(): Auditable
     {
         return new class implements Auditable
         {

@@ -11,8 +11,6 @@ use Illuminate\Support\Str;
 
 class Audit implements ArrayAccess
 {
-    private Auditor $auditor;
-
     private array $entities = [];
 
     private string $event;
@@ -21,9 +19,8 @@ class Audit implements ArrayAccess
     private string $initiator;
     private array $initiatorContext = [];
 
-    public function __construct(Auditor $auditor)
+    public function __construct(private Auditor $auditor)
     {
-        $this->auditor = $auditor;
     }
 
     /**
@@ -33,12 +30,11 @@ class Audit implements ArrayAccess
      * @example entity(['user' => 1, 'car' => 1])
      * @example entity(['user' => [1, 2])
      * @example entity([$auditable1, $auditable2])
-     *
-     * @param  string|array|\Butler\Audot\Contracts\Auditable  $type
-     * @param  mixed  $identifier
      */
-    public function entity($type, $identifier = null): self
-    {
+    public function entity(
+        string|array|Auditable $type,
+        mixed $identifier = null,
+    ): self {
         if (is_string($type) && $identifier) {
             foreach (Arr::wrap($identifier) as $identifier) {
                 $this->entities[] = compact('type', 'identifier');
@@ -139,9 +135,9 @@ class Audit implements ArrayAccess
             $this->initiator(...call_user_func($resolver));
         }
 
-        throw_unless($this->event ?? false, Exception::class, 'Event is required.');
-        throw_unless($this->entities, Exception::class, 'At least one entity is required.');
-        throw_unless($this->initiator ?? false, Exception::class, 'Initiator is required.');
+        throw_unless($this->event ?? false, 'Event is required.');
+        throw_unless($this->entities, 'At least one entity is required.');
+        throw_unless($this->initiator ?? false, 'Initiator is required.');
 
         return [
             'correlationId' => $this->auditor->correlationId(),
