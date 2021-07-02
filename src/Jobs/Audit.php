@@ -17,11 +17,9 @@ class Audit implements ShouldQueue
     use Queueable;
 
     public $backoff = 16;
-    public $data;
 
-    public function __construct(array $data)
+    public function __construct(public array $data)
     {
-        $this->data = $data;
     }
 
     public function handle()
