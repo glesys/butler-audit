@@ -135,6 +135,19 @@ Http::withCorrelationId()->post('https://service-b.example/welcome-email', $user
 audit($user)->welcomed();
 ```
 
+### Queued jobs
+
+The trait `WithCorrelationId` can be used on queable jobs that needs the same correlation id as the request.
+
+#### How it works
+
+1. A job using the `WithCorrelationId` trait is dispatched to the queue.
+1. Our `Dispatcher` will set a `correlationId` property on the job.
+1. The job is handled by a worker.
+1. The middleware `SetCorrelationId` will tell `Auditor` to use the correlation id from the job.
+
+Extending the dispatcher can be disabled by setting `butler.audit.extend_bus_dispatcher` to `false`.
+
 ## Auditor Fake
 
 Instead of [faking the queue](https://laravel.com/docs/master/mocking#queue-fake) in your tests and e.g. `Queue::assertPushed(function (AuditJob) {})` you can fake requests, see example below.
