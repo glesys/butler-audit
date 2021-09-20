@@ -11,6 +11,13 @@ use Illuminate\Support\Carbon;
 
 class AuditTest extends AbstractTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Auditor::initiatorResolver(fn () => ['setup', ['ip' => '127.0.0.1']]);
+    }
+
     /**
      * @dataProvider entityProvider
      */
@@ -112,9 +119,11 @@ class AuditTest extends AbstractTestCase
         $this->makeAudit()->eventContext('foo', ['bar' => 'baz']);
     }
 
-    public function test_initiator()
+    public function test_initiator_overrides_initiatorResolver()
     {
         $audit = $this->makeAudit()->initiator('api');
+
+        $this->assertNotEquals('setup', $audit['initiator'], '"initiator resolver" should not be used');
 
         $this->assertEquals('api', $audit['initiator']);
     }
@@ -147,28 +156,12 @@ class AuditTest extends AbstractTestCase
         $this->makeAudit()->initiatorContext('foo', ['bar' => 'baz']);
     }
 
-    public function test_initiatorResolver_is_used_when_set()
+    public function test_initiatorResolver_is_used_when_initiator_is_empty()
     {
-        Auditor::initiatorResolver(fn () => ['api', ['ip' => '1.2.3.4']]);
-
         $array = $this->makeAudit()->event('foo')->entity('bar', 1)->toArray();
 
-        $this->assertEquals('api', $array['initiator']);
-        $this->assertEquals([['key' => 'ip', 'value' => '1.2.3.4']], $array['initiatorContext']);
-    }
-
-    public function test_initiator_can_be_overriden_when_initiatorResolver_is_used()
-    {
-        Auditor::initiatorResolver(fn () => ['api1']);
-
-        $array = $this->makeAudit()
-            ->event('foo')
-            ->entity('bar', 1)
-            ->initiator('api2', ['ip' => '2.3.4.5'])
-            ->toArray();
-
-        $this->assertEquals('api2', $array['initiator']);
-        $this->assertEquals([['key' => 'ip', 'value' => '2.3.4.5']], $array['initiatorContext']);
+        $this->assertEquals('setup', $array['initiator']);
+        $this->assertEquals([['key' => 'ip', 'value' => '127.0.0.1']], $array['initiatorContext']);
     }
 
     public function test_log_sends_correct_data_to_auditor()
@@ -199,7 +192,6 @@ class AuditTest extends AbstractTestCase
     {
         $audit = $this->makeAudit()
             ->event('name1')
-            ->initiator('api')
             ->entity('type', 'id');
 
         $audit->log('name2', ['foo' => 'bar']);
@@ -232,6 +224,8 @@ class AuditTest extends AbstractTestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Initiator is required.');
+
+        Auditor::initiatorResolver(null);
 
         $this->makeAudit()
             ->event('foo')
@@ -270,9 +264,7 @@ class AuditTest extends AbstractTestCase
 
     public function test_magic_call_sets_prefixed_event_and_eventContext()
     {
-        $audit = $this->makeAudit()
-            ->entity('entityType', 'entityId')
-            ->initiator('api');
+        $audit = $this->makeAudit()->entity('entityType', 'entityId');
 
         $audit->fooBar(['contextKey' => 'context value']);
 
@@ -287,9 +279,7 @@ class AuditTest extends AbstractTestCase
 
     public function test_magic_call_handles_Collection_as_context()
     {
-        $audit = $this->makeAudit()
-            ->entity('entityType', 'entityId')
-            ->initiator('api');
+        $audit = $this->makeAudit()->entity('entityType', 'entityId');
 
         $audit->fooBar(collect(['contextKey' => 'context value']));
 
@@ -305,8 +295,7 @@ class AuditTest extends AbstractTestCase
     {
         $audit = $this->makeAudit()
             ->entity('foo', 1)
-            ->entity('foo', 2)
-            ->initiator('api');
+            ->entity('foo', 2);
 
         $audit->barBaz();
 
@@ -319,8 +308,7 @@ class AuditTest extends AbstractTestCase
     {
         $auditor = $this->makeAudit()
             ->entity('foo', 1)
-            ->entity('bar', 2)
-            ->initiator('api');
+            ->entity('bar', 2);
 
         $auditor->baz();
 

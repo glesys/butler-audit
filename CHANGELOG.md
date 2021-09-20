@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **BREAKING:**: Handle correlation id for queued job by extending job "Dispatcher" and adding "WithCorrelationId" trait.
+- **BREAKING:**: Registers a default "initiator resolver".
 
 ### Changed
 - **BREAKING:**: Require PHP 8.0.

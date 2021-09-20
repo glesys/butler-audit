@@ -15,6 +15,7 @@ class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->addPendingRequestMacro();
+        $this->addDefaultInitiatorResolver();
         $this->extendBusDispatcher();
     }
 
@@ -31,6 +32,19 @@ class ServiceProvider extends BaseServiceProvider
             'withCorrelationId',
             fn () => $this->withHeaders(['X-Correlation-ID' => Auditor::correlationId()])
         );
+    }
+
+    private function addDefaultInitiatorResolver(): void
+    {
+        if (config('butler.audit.default_initiator_resolver') === false) {
+            return;
+        }
+
+        $resolver = $this->app->runningInConsole()
+            ? fn () => ['console', ['hostname' => gethostname()]]
+            : fn () => [request()->ip(), ['userAgent' => request()->userAgent()]];
+
+        Auditor::initiatorResolver($resolver);
     }
 
     private function extendBusDispatcher()
