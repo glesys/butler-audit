@@ -64,7 +64,9 @@ BUTLER_AUDIT_DRIVER=log
 
 ### Initiator resolver
 
-Set a "initiator resolver" for your application to avoid setting initiator
+A default "initiator resolver" is registered in the [ServiceProvider](src/ServiceProvider.php).
+
+Your application can have its own resolver to avoid setting initiator
 manually for every audit call.
 You can still use `initiator()` and `initiatorContext()` to override the values set by the resolver.
 
@@ -77,6 +79,8 @@ Auditor::initiatorResolver(fn () => [
     ]
 ]);
 ```
+
+You can disable the default resolver by setting `butler.audit.default_initiator_resolver` to `false`.
 
 ## Auditable
 

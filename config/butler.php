@@ -10,6 +10,8 @@ return [
 
         'driver' => env('BUTLER_AUDIT_DRIVER'),
 
+        'default_initiator_resolver' => true,
+
         'extend_bus_dispatcher' => true,
 
     ],

@@ -41,6 +41,32 @@ class ServiceProviderTest extends AbstractTestCase
         );
     }
 
+    public function test_default_initiator_resolver_resolves_console()
+    {
+        Auditor::fake();
+
+        audit('foo', 123)->bar();
+
+        Auditor::assertLogged('foo.bar', fn ($data)
+            => $data->initiator === 'console'
+            && $data->hasInitiatorContext('hostname', gethostname()));
+    }
+
+    public function test_audit_initiator_resolver_resolves_web_user()
+    {
+        putenv('APP_RUNNING_IN_CONSOLE=false');
+
+        $this->refreshApplication();
+
+        Auditor::fake();
+
+        audit('foo', 123)->bar();
+
+        Auditor::assertLogged('foo.bar', fn ($data)
+            => $data->initiator === '127.0.0.1'
+            && $data->hasInitiatorContext('userAgent', 'Symfony'));
+    }
+
     public function test_Dispatcher_is_extended()
     {
         $this->assertInstanceOf(Dispatcher::class, app(BaseDispatcher::class));
