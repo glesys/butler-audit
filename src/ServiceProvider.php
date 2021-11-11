@@ -30,7 +30,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         PendingRequest::macro(
             'withCorrelationId',
-            fn () => $this->withHeaders(['X-Correlation-ID' => Auditor::correlationId()])
+            fn () => $this->withHeaders(Auditor::headers())
         );
     }
 

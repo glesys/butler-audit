@@ -28,6 +28,8 @@ class Auditor
 
     protected $correlationId;
 
+    protected bool $correlationRoot = false;
+
     protected bool $recording = false;
 
     protected array $recorded = [];
@@ -90,11 +92,31 @@ class Auditor
 
     public function correlationId(?string $correlationId = null): string
     {
+        $this->correlationRoot = false;
+
         if (func_num_args() === 1) {
             $this->correlationId = $correlationId;
         }
 
-        return $this->correlationId ??= request()->header('X-Correlation-ID', (string) Str::uuid());
+        if ($this->correlationId) {
+            return $this->correlationId;
+        }
+
+        if (request()->hasHeader('X-Correlation-ID')) {
+            return $this->correlationId = request()->header('X-Correlation-ID');
+        }
+
+        $this->correlationRoot = true;
+
+        return $this->correlationId = Str::uuid();
+    }
+
+    public function headers(): array
+    {
+        return array_filter([
+            'X-Correlation-ID' => $this->correlationId(),
+            'X-Correlation-Root' => $this->correlationRoot,
+        ]);
     }
 
     public function initiatorResolver(?Closure $resolver = null): ?Closure
