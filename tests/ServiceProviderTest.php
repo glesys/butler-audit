@@ -72,7 +72,7 @@ class ServiceProviderTest extends AbstractTestCase
         $this->assertInstanceOf(Dispatcher::class, app(BaseDispatcher::class));
     }
 
-    public function test_correlation_id_is_reset_after_each_queued_job()
+    public function test_correlation_id_and_depth_is_reset_after_each_queued_job()
     {
         $this->assertTrue(app('events')->hasListeners(JobProcessed::class));
 
@@ -81,5 +81,6 @@ class ServiceProviderTest extends AbstractTestCase
         event(new JobProcessed('connection', new JobWithoutCorrelationId()));
 
         $this->assertNotEquals($correlationId, Auditor::correlationId());
+        $this->assertEquals(0, Auditor::correlationDepth());
     }
 }

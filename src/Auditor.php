@@ -28,6 +28,8 @@ class Auditor
 
     protected $correlationId;
 
+    protected $correlationDepth;
+
     protected bool $recording = false;
 
     protected array $recorded = [];
@@ -50,6 +52,8 @@ class Auditor
         } else {
             AuditJob::dispatch($data);
         }
+
+        $this->incrementCorrelationDepth();
     }
 
     public function assertLogged(string $eventName, Closure $callback = null): void
@@ -97,6 +101,23 @@ class Auditor
         return $this->correlationId ??= request()->header('X-Correlation-ID', (string) Str::uuid());
     }
 
+    public function correlationDepth(?int $correlationDepth = null): int
+    {
+        if (func_num_args() === 1) {
+            $this->correlationDepth = $correlationDepth;
+        }
+
+        return $this->correlationDepth ??= request()->header('X-Correlation-Depth', 0);
+    }
+
+    public function headers(): array
+    {
+        return [
+            'X-Correlation-ID' => $this->correlationId(),
+            'X-Correlation-Depth' => $this->correlationDepth(),
+        ];
+    }
+
     public function initiatorResolver(?Closure $resolver = null): ?Closure
     {
         if (func_num_args() === 1) {
@@ -113,5 +134,11 @@ class Auditor
         }
 
         return tap(new Audit($this))->{$method}(...$parameters);
+    }
+
+    # POC
+    private function incrementCorrelationDepth(): void
+    {
+        $this->correlationDepth = $this->correlationDepth() + 1;
     }
 }

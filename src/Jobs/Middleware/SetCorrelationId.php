@@ -11,6 +11,7 @@ class SetCorrelationId
     {
         if (in_array(WithCorrelationId::class, class_uses_recursive($job))) {
             Auditor::correlationId($job->correlationId);
+            Auditor::correlationDepth($job->correlationDepth);
         }
 
         return $next($job);

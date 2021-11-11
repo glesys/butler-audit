@@ -122,6 +122,51 @@ class AuditorTest extends AbstractTestCase
         $this->assertEquals('not a uuid', $auditor->correlationId());
     }
 
+    public function test_correlationDepth_returns_value_from_http_header()
+    {
+        request()->headers->set('X-Correlation-Depth', 123);
+
+        $this->assertEquals(123, (new Auditor())->correlationDepth());
+    }
+
+    public function test_correlationDepth_returns_0_if_http_header_is_not_set()
+    {
+        $this->assertEquals(0, (new Auditor())->correlationDepth());
+    }
+
+    public function test_correlationDepth_can_be_resetted()
+    {
+        $auditor = tap(new Auditor())->correlationDepth(123);
+
+        $depth = $auditor->correlationDepth(null);
+
+        $this->assertEquals(0, $depth);
+    }
+
+    public function test_correlationDepth_can_be_set_manually()
+    {
+        $auditor = new Auditor();
+
+        $this->assertEquals(123, $auditor->correlationDepth(123));
+        $this->assertEquals(123, $auditor->correlationDepth());
+        $this->assertEquals(0, $auditor->correlationDepth(null));
+    }
+
+    public function test_log_increments_correlationDepth()
+    {
+        $auditor = (new Auditor())->fake();
+
+        $this->assertEquals(0, $auditor->correlationDepth());
+
+        (new Audit($auditor))
+            ->entity('entityType', 'entity-id')
+            ->event('eventName')
+            ->initiator('phpunit')
+            ->log();
+
+        $this->assertEquals(1, $auditor->correlationDepth());
+    }
+
     public function test_initiatorResolver_can_be_set()
     {
         $auditor = $this->makeAuditor();

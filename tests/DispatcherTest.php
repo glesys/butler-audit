@@ -13,12 +13,13 @@ class DispatcherTest extends AbstractTestCase
         Queue::fake();
 
         Auditor::correlationId('a-correlation-id');
+        Auditor::correlationDepth(1);
 
         dispatch(new JobWithCorrelationId());
 
-        Queue::assertPushed(
-            fn (JobWithCorrelationId $job) => $job->correlationId === 'a-correlation-id'
-        );
+        Queue::assertPushed(fn (JobWithCorrelationId $job)
+            => $job->correlationId === 'a-correlation-id'
+            && $job->correlationDepth === 1);
     }
 
     public function test_it_does_not_set_correlation_id_for_job_not_using_WithCorrelationId_trait()
@@ -30,8 +31,8 @@ class DispatcherTest extends AbstractTestCase
 
         Queue::assertPushed(JobWithoutCorrelationId::class);
 
-        Queue::assertNotPushed(
-            fn (JobWithoutCorrelationId $job) => property_exists($job, 'correlationId')
-        );
+        Queue::assertNotPushed(fn (JobWithoutCorrelationId $job)
+            => property_exists($job, 'correlationId')
+            && property_exists($job, 'correlationDepth'));
     }
 }

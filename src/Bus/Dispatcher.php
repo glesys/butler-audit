@@ -17,6 +17,7 @@ class Dispatcher extends BaseDispatcher
     {
         if (in_array(WithCorrelationId::class, class_uses_recursive($command))) {
             $command->correlationId = Auditor::correlationId();
+            $command->correlationDepth = Auditor::correlationDepth();
         }
 
         return parent::dispatchToQueue($command);

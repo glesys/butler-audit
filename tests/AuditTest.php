@@ -178,6 +178,7 @@ class AuditTest extends AbstractTestCase
 
         Auditor::assertLogged('foobarbaz', function (AuditData $data) {
             return $data->correlationId === 'uuid'
+                && $data->correlationDepth === 0
                 && $data->hasEntity('entityType', 'entity-id')
                 && $data->eventContext('foo', 'bar')
                 && $data->eventContext('foo', 'baz')

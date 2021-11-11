@@ -7,6 +7,7 @@ use Butler\Audit\Jobs\Middleware\SetCorrelationId;
 trait WithCorrelationId
 {
     public $correlationId;
+    public $correlationDepth;
 
     public function middleware()
     {

@@ -30,7 +30,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         PendingRequest::macro(
             'withCorrelationId',
-            fn () => $this->withHeaders(['X-Correlation-ID' => Auditor::correlationId()])
+            fn () => $this->withHeaders(Auditor::headers())
         );
     }
 
@@ -62,7 +62,10 @@ class ServiceProvider extends BaseServiceProvider
     public function listenForJobProcessedEvent()
     {
         if ($this->app->runningInConsole()) {
-            Queue::after(fn (JobProcessed $event) => Auditor::correlationId(null));
+            Queue::after(function (JobProcessed $event) {
+                Auditor::correlationId(null);
+                Auditor::correlationDepth(null);
+            });
         }
     }
 }

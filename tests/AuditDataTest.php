@@ -19,6 +19,7 @@ class AuditDataTest extends TestCase
     public function test_fluent_attributes()
     {
         $this->assertEquals('uuid', $this->data->correlationId);
+        $this->assertEquals(0, $this->data->correlationDepth);
         $this->assertEquals('eventName', $this->data->event);
         $this->assertEquals('phpunit', $this->data->initiator);
         $this->assertEquals('2020-11-19T10:38:34+00:00', $this->data->occurredAt);
@@ -46,6 +47,7 @@ class AuditDataTest extends TestCase
     {
         return new AuditData([
             'correlationId' => 'uuid',
+            'correlationDepth' => 0,
             'entities' => [
                 [
                     'type' => 'entityType',

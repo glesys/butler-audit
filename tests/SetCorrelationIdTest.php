@@ -13,10 +13,12 @@ class SetCorrelationIdTest extends AbstractTestCase
 
         $job = new JobWithCorrelationId();
         $job->correlationId = 'correlation-id';
+        $job->correlationDepth = 1;
 
         (new SetCorrelationId())->handle($job, fn ($job) => true);
 
         $this->assertEquals('correlation-id', Auditor::correlationId());
+        $this->assertEquals(1, Auditor::correlationDepth());
     }
 
     public function test_correlation_id_is_not_set_when_job_is_not_using_WithCorrelationId_trait()
@@ -30,5 +32,6 @@ class SetCorrelationIdTest extends AbstractTestCase
         (new SetCorrelationId())->handle($job, fn ($job) => true);
 
         $this->assertEquals($correlationId, Auditor::correlationId());
+        $this->assertEquals(0, Auditor::correlationDepth());
     }
 }
