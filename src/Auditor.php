@@ -32,7 +32,7 @@ class Auditor
 
     protected array $recorded = [];
 
-    private $initiatorResolver;
+    private static $initiatorResolver;
 
     public function fake()
     {
@@ -100,10 +100,10 @@ class Auditor
     public function initiatorResolver(?Closure $resolver = null): ?Closure
     {
         if (func_num_args() === 1) {
-            $this->initiatorResolver = $resolver;
+            static::$initiatorResolver = $resolver;
         }
 
-        return $this->initiatorResolver;
+        return static::$initiatorResolver;
     }
 
     public function __call($method, $parameters)
