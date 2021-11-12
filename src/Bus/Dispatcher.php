@@ -15,8 +15,9 @@ class Dispatcher extends BaseDispatcher
 
     public function dispatchToQueue($command)
     {
-        if (in_array(WithCorrelationId::class, class_uses_recursive($command))) {
+        if (in_array(WithCorrelation::class, class_uses_recursive($command))) {
             $command->correlationId = Auditor::correlationId();
+            $command->correlationTrail = Auditor::correlationTrail();
         }
 
         return parent::dispatchToQueue($command);

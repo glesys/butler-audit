@@ -4,7 +4,7 @@ namespace Butler\Audit\Tests;
 
 use Butler\Audit\Bus\Dispatcher;
 use Butler\Audit\Facades\Auditor;
-use Butler\Audit\Tests\JobWithoutCorrelationId;
+use Butler\Audit\Tests\JobWithoutCorrelation;
 use GrahamCampbell\TestBenchCore\ServiceProviderTrait;
 use Illuminate\Bus\Dispatcher as BaseDispatcher;
 use Illuminate\Queue\Events\JobProcessed;
@@ -72,14 +72,16 @@ class ServiceProviderTest extends AbstractTestCase
         $this->assertInstanceOf(Dispatcher::class, app(BaseDispatcher::class));
     }
 
-    public function test_correlation_id_is_reset_after_each_queued_job()
+    public function test_correlation_id_and_trail_is_reset_after_each_queued_job()
     {
         $this->assertTrue(app('events')->hasListeners(JobProcessed::class));
 
         $correlationId = Auditor::correlationId();
+        $correlationTrail = Auditor::correlationTrail('aaaa');
 
-        event(new JobProcessed('connection', new JobWithoutCorrelationId()));
+        event(new JobProcessed('connection', new JobWithoutCorrelation()));
 
         $this->assertNotEquals($correlationId, Auditor::correlationId());
+        $this->assertNull(Auditor::correlationTrail());
     }
 }

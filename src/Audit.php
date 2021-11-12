@@ -141,6 +141,7 @@ class Audit implements ArrayAccess
 
         return [
             'correlationId' => $this->auditor->correlationId(),
+            'correlationTrail' => $this->auditor->correlationTrail(),
             'entities' => $this->entities,
             'event' => $this->event,
             'eventContext' => $this->eventContext,

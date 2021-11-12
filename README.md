@@ -19,13 +19,14 @@ Authorization: Bearer secret
 
 {
     "correlationId": "d9afea6a-14ed-4777-ae2f-a4d8baf4d5b7",
+    "correlationTrail": "Mv9Jd6VM:GaIngT2j",
     "entities": [
         {
             "type": "user",
             "identifier": 1
         }
     ],
-    "event": "subscribed",
+    "event": "user.subscribed",
     "eventContext": [
         {
             "key": "months",
@@ -124,31 +125,63 @@ audit($user)->subscribed(); // equivalent to audit(['user', 1])->subscribed();
 
 We use "X-Correlation-ID" header to "relate" audits.
 
+A "X-Correlation-Trail" header is also used to figure out the order of events
+without relying on the events `occured_at`, see the example json below.
+
 ### Http client macro
 
-Use the "withCorrelationId" macro to add the "X-Correlation-ID" header when sending requests with the Http client.
+Use the "withCorrelation" macro to add the "X-Correlation-ID" header when sending requests with the Http client.
 
-In the example below, both "audits" will have the same correlation-id.
+In the example below, all "audits" will have the same correlation-id.
 
 ```php
 // Service A
 audit($user)->signedUp();
-Http::withCorrelationId()->post('https://service-b.example/welcome-email', $user);
+Http::withCorrelation()->post('https://service-b.example/welcome-email', $user);
 
 // Service B
 audit($user)->welcomed();
+Http::withCorrelation()->post('https://service-c.example/notify-staff');
+
+// Service C
+audit($employee)->notified();
+```
+
+The requests sent to your configured `BUTLER_AUDIT_URL` will look something like:
+
+```json
+{
+    "initiator": "api",
+    "event": "user.signedUp",
+    "correlationId": "92a55a99-82c1-4129-a587-96006f6aac82",
+    "correlationTrail": null
+}
+
+{
+    "initiator": "service-a",
+    "event": "user.welcomed",
+    "correlationId": "92a55a99-82c1-4129-a587-96006f6aac82",
+    "correlationTrail": "Mv9Jd6VM"
+}
+
+{
+    "initiator": "service-b",
+    "event": "employee.notified",
+    "correlationId": "92a55a99-82c1-4129-a587-96006f6aac82",
+    "correlationTrail": "Mv9Jd6VM:GaIngT2j"
+}
 ```
 
 ### Queued jobs
 
-The trait `WithCorrelationId` can be used on queable jobs that needs the same correlation id as the request.
+The trait `WithCorrelation` can be used on queable jobs that needs the same correlation id as the request.
 
 #### How it works
 
-1. A job using the `WithCorrelationId` trait is dispatched to the queue.
+1. A job using the `WithCorrelation` trait is dispatched to the queue.
 1. Our `Dispatcher` will set a `correlationId` property on the job.
 1. The job is handled by a worker.
-1. The middleware `SetCorrelationId` will tell `Auditor` to use the correlation id from the job.
+1. The middleware `SetCorrelation` will tell `Auditor` to use the correlation id from the job.
 
 Extending the dispatcher can be disabled by setting `butler.audit.extend_bus_dispatcher` to `false`.
 

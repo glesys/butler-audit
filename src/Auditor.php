@@ -27,6 +27,7 @@ class Auditor
     }
 
     protected $correlationId;
+    protected $correlationTrail;
 
     protected bool $recording = false;
 
@@ -95,6 +96,37 @@ class Auditor
         }
 
         return $this->correlationId ??= request()->header('X-Correlation-ID', (string) Str::uuid());
+    }
+
+    public function correlationTrail(?string $correlationTrail = null): ?string
+    {
+        if (func_num_args() === 1) {
+            $this->correlationTrail = $correlationTrail;
+        }
+
+        if ($this->correlationTrail) {
+            return $this->correlationTrail;
+        }
+
+        if (! request()->hasHeader('X-Correlation-ID')) {
+            return $this->correlationTrail = null;
+        }
+
+        $trail = Str::random(8);
+
+        if ($existingTrail = request()->header('X-Correlation-Trail')) {
+            return $this->correlationTrail = "{$existingTrail}:{$trail}";
+        }
+
+        return $this->correlationTrail = $trail;
+    }
+
+    public function httpHeaders(): array
+    {
+        return array_filter([
+            'X-Correlation-ID' => $this->correlationId(),
+            'X-Correlation-Trail' => $this->correlationTrail(),
+        ]);
     }
 
     public function initiatorResolver(?Closure $resolver = null): ?Closure
