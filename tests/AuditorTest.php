@@ -122,6 +122,75 @@ class AuditorTest extends AbstractTestCase
         $this->assertEquals('not a uuid', $auditor->correlationId());
     }
 
+    public function test_correlationTrail_returns_null_if_root_event()
+    {
+        // NOTE: If "X-Correlation-ID" header is not set, it is a "root event".
+        request()->headers->remove('X-Correlation-ID');
+
+        $this->assertNull($this->makeAuditor()->correlationTrail());
+    }
+
+    public function test_correlationTrail_appends_to_value_from_http_header()
+    {
+        request()->headers->set('X-Correlation-ID', Str::uuid());
+        request()->headers->set('X-Correlation-Trail', 'aaaaaaaa');
+
+        $trails = explode(':', $this->makeAuditor()->correlationTrail());
+
+        $this->assertCount(2, $trails);
+        $this->assertEquals('aaaaaaaa', $trails[0]);
+        $this->assertEquals(8, strlen($trails[1]));
+    }
+
+    public function test_correlationTrail_returns_random_string_if_http_header_is_not_set()
+    {
+        request()->headers->set('X-Correlation-ID', Str::uuid());
+        request()->headers->remove('X-Correlation-Trail');
+
+        $this->assertEquals(8, strlen($this->makeAuditor()->correlationTrail()));
+    }
+
+    public function test_correlationTrail_can_be_resetted()
+    {
+        request()->headers->set('X-Correlation-ID', Str::uuid());
+
+        $auditor = $this->makeAuditor();
+
+        $id1 = $auditor->correlationTrail();
+        $id2 = $auditor->correlationTrail(null);
+
+        $this->assertEquals(8, strlen($id1));
+        $this->assertEquals(8, strlen($id2));
+        $this->assertNotEquals($id1, $id2);
+    }
+
+    public function test_correlationTrail_can_be_set_manually()
+    {
+        $auditor = $this->makeAuditor();
+
+        $this->assertEquals('trail', $auditor->correlationTrail('trail'));
+        $this->assertEquals('trail', $auditor->correlationTrail());
+    }
+
+    public function test_httpHeaders_without_trail()
+    {
+        $headers = $this->makeAuditor()->httpHeaders();
+
+        $this->assertCount(1, $headers);
+        $this->assertTrue(Str::isUuid($headers['X-Correlation-ID']));
+    }
+
+    public function test_httpHeaders_with_trail()
+    {
+        $auditor = tap($this->makeAuditor())->correlationTrail('aaaa:bbbb');
+
+        $headers = $auditor->httpHeaders();
+
+        $this->assertCount(2, $headers);
+        $this->assertTrue(Str::isUuid($headers['X-Correlation-ID']));
+        $this->assertEquals('aaaa:bbbb', $headers['X-Correlation-Trail']);
+    }
+
     public function test_initiatorResolver_can_be_set()
     {
         $auditor = $this->makeAuditor();

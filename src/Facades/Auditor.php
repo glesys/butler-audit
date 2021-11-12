@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void assertNothingLogged()
  * @method static void assertLoggedCount(int $count)
  * @method static string correlationId(?string $correlationId = null)
+ * @method static string correlationTrail(?string $correlationTrail = null)
  * @method static ?\Closure initiatorResolver(?\Closure $resolver)
  *
  * @see \Butler\Audit\Auditor

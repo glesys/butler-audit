@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- "correlationTrail" in the audit request body.
+- A "X-Correlation-Trail" header in the http macro `withCorrelation`.
+
+### Changed
+- **BREAKING**: Renamed macro `withCorrelationId` to `withCorrelation`.
+- **BREAKING**: Renamed class `WithCorrelationId` to `WithCorrelation`.
+- **BREAKING**: Renamed class `SetCorrelationId` to `SetCorrelation`.
 
 ## [0.4.1] - 2021-11-12
 
