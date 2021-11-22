@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.5.0] - 2021-11-22
+
 ### Added
 - "correlationTrail" in the audit request body.
 - A "X-Correlation-Trail" header in the http macro `withCorrelation`.
