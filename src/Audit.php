@@ -7,7 +7,6 @@ use Butler\Audit\Contracts\Auditable;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class Audit implements ArrayAccess
 {
@@ -153,12 +152,12 @@ class Audit implements ArrayAccess
 
     public function __call($name, $arguments)
     {
-        $event = Str::of($name)->camel();
+        $event = str($name)->camel();
 
         // NOTE: Prefix "event" with entity type when there is only one unique entity type.
         $uniqueEntityTypes = collect($this->entities)->pluck('type')->unique();
         if ($uniqueEntityTypes->count() === 1) {
-            $type = Str::camel($uniqueEntityTypes->first());
+            $type = str($uniqueEntityTypes->first())->camel();
             $event = $event->start($type . '.');
         }
 

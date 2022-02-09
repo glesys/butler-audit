@@ -5,7 +5,6 @@ namespace Butler\Audit\Tests\Unit;
 use Butler\Audit\Facades\Auditor;
 use Butler\Audit\Tests\AbstractTestCase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 
 class HttpClientTest extends AbstractTestCase
 {
@@ -15,7 +14,7 @@ class HttpClientTest extends AbstractTestCase
         Http::withCorrelation()->post('/api');
         Http::assertSent(fn ($request)
             => $request->hasHeader('X-Correlation-ID')
-            && Str::isUuid($request->header('X-Correlation-ID')[0]));
+            && str($request->header('X-Correlation-ID')[0])->isUuid());
     }
 
     public function test_macro_withCorrelation_adds_header_with_correlation_trail_if_set()

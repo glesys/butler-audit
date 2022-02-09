@@ -4,13 +4,12 @@ namespace Butler\Audit\Concerns;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 trait IsAuditable
 {
     public function auditorType(): string
     {
-        return Str::camel(class_basename(static::class));
+        return str(class_basename(static::class))->camel();
     }
 
     public function auditorIdentifier()
