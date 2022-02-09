@@ -7,7 +7,6 @@ use Butler\Audit\Jobs\Audit as AuditJob;
 use Butler\Audit\Testing\AuditData;
 use Closure;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use PHPUnit\Framework\Assert as PHPUnit;
 
@@ -95,7 +94,7 @@ class Auditor
             $this->correlationId = $correlationId;
         }
 
-        return $this->correlationId ??= request()->header('X-Correlation-ID', (string) Str::uuid());
+        return $this->correlationId ??= request()->header('X-Correlation-ID', (string) str()->uuid());
     }
 
     public function correlationTrail(?string $correlationTrail = null): ?string
@@ -112,7 +111,7 @@ class Auditor
             return $this->correlationTrail = null;
         }
 
-        $trail = Str::random(8);
+        $trail = str()->random(8);
 
         if ($existingTrail = request()->header('X-Correlation-Trail')) {
             return $this->correlationTrail = "{$existingTrail}:{$trail}";

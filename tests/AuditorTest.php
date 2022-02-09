@@ -6,7 +6,6 @@ use Butler\Audit\Audit;
 use Butler\Audit\Auditor;
 use Butler\Audit\Testing\AuditData;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use PHPUnit\Framework\ExpectationFailedException;
 
 class AuditorTest extends AbstractTestCase
@@ -92,14 +91,14 @@ class AuditorTest extends AbstractTestCase
 
     public function test_correlationId_returns_value_from_http_header()
     {
-        request()->headers->set('X-Correlation-ID', $uuid = Str::uuid());
+        request()->headers->set('X-Correlation-ID', $uuid = str()->uuid());
 
         $this->assertEquals($uuid, $this->makeAuditor()->correlationId());
     }
 
     public function test_correlationId_returns_uuid_if_http_header_is_not_set()
     {
-        $this->assertTrue(Str::isUuid($this->makeAuditor()->correlationId()));
+        $this->assertTrue(str($this->makeAuditor()->correlationId())->isUuid());
     }
 
     public function test_correlationId_can_be_resetted()
@@ -109,8 +108,8 @@ class AuditorTest extends AbstractTestCase
         $id1 = $auditor->correlationId();
         $id2 = $auditor->correlationId(null);
 
-        $this->assertTrue(Str::isUuid($id1));
-        $this->assertTrue(Str::isUuid($id2));
+        $this->assertTrue(str($id1)->isUuid());
+        $this->assertTrue(str($id2)->isUuid());
         $this->assertNotEquals($id1, $id2);
     }
 
@@ -132,7 +131,7 @@ class AuditorTest extends AbstractTestCase
 
     public function test_correlationTrail_appends_to_value_from_http_header()
     {
-        request()->headers->set('X-Correlation-ID', Str::uuid());
+        request()->headers->set('X-Correlation-ID', str()->uuid());
         request()->headers->set('X-Correlation-Trail', 'aaaaaaaa');
 
         $trails = explode(':', $this->makeAuditor()->correlationTrail());
@@ -144,7 +143,7 @@ class AuditorTest extends AbstractTestCase
 
     public function test_correlationTrail_returns_random_string_if_http_header_is_not_set()
     {
-        request()->headers->set('X-Correlation-ID', Str::uuid());
+        request()->headers->set('X-Correlation-ID', str()->uuid());
         request()->headers->remove('X-Correlation-Trail');
 
         $this->assertEquals(8, strlen($this->makeAuditor()->correlationTrail()));
@@ -152,7 +151,7 @@ class AuditorTest extends AbstractTestCase
 
     public function test_correlationTrail_can_be_resetted()
     {
-        request()->headers->set('X-Correlation-ID', Str::uuid());
+        request()->headers->set('X-Correlation-ID', str()->uuid());
 
         $auditor = $this->makeAuditor();
 
@@ -177,7 +176,7 @@ class AuditorTest extends AbstractTestCase
         $headers = $this->makeAuditor()->httpHeaders();
 
         $this->assertCount(1, $headers);
-        $this->assertTrue(Str::isUuid($headers['X-Correlation-ID']));
+        $this->assertTrue(str($headers['X-Correlation-ID'])->isUuid());
     }
 
     public function test_httpHeaders_with_trail()
@@ -187,7 +186,7 @@ class AuditorTest extends AbstractTestCase
         $headers = $auditor->httpHeaders();
 
         $this->assertCount(2, $headers);
-        $this->assertTrue(Str::isUuid($headers['X-Correlation-ID']));
+        $this->assertTrue(str($headers['X-Correlation-ID'])->isUuid());
         $this->assertEquals('aaaa:bbbb', $headers['X-Correlation-Trail']);
     }
 
