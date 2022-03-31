@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2022-04-01
+
+### Changed
+- Add type-hinting to ArrayAccess-methods in Audit to suppress deprecation notices.
 
 ## [0.6.0] - 2022-02-14
 
