@@ -108,22 +108,22 @@ class Audit implements ArrayAccess
         $this->auditor->log($this);
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new Exception('Audit data may not be mutated using array access.');
     }
 
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->$offset);
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         throw new Exception('Audit data may not be mutated using array access.');
     }
 
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->$offset ?? null;
     }
