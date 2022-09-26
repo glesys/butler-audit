@@ -2,7 +2,6 @@
 
 namespace Butler\Audit;
 
-use Butler\Audit\Audit;
 use Butler\Audit\Jobs\Audit as AuditJob;
 use Butler\Audit\Testing\AuditData;
 use Closure;

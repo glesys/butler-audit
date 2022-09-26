@@ -4,7 +4,6 @@ namespace Butler\Audit\Tests;
 
 use Butler\Audit\Bus\Dispatcher;
 use Butler\Audit\Facades\Auditor;
-use Butler\Audit\Tests\JobWithoutCorrelation;
 use GrahamCampbell\TestBenchCore\ServiceProviderTrait;
 use Illuminate\Bus\Dispatcher as BaseDispatcher;
 use Illuminate\Queue\Events\JobProcessed;
