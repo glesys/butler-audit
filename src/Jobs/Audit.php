@@ -26,6 +26,7 @@ class Audit implements ShouldQueue
     {
         if (config('butler.audit.driver') === 'log') {
             Log::info(json_encode($this->data));
+
             return;
         }
 
