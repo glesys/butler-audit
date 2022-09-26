@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Laravel pint.
+
 ## [0.6.1] - 2022-04-01
 
 ### Changed
