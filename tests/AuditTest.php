@@ -8,6 +8,7 @@ use Butler\Audit\Facades\Auditor;
 use Butler\Audit\Testing\AuditData;
 use Exception;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AuditTest extends AbstractTestCase
 {
@@ -18,9 +19,7 @@ class AuditTest extends AbstractTestCase
         Auditor::initiatorResolver(fn () => ['setup', ['ip' => '127.0.0.1']]);
     }
 
-    /**
-     * @dataProvider entityProvider
-     */
+    #[DataProvider('entityProvider')]
     public function test_entity($type, $id, $expectedEntities)
     {
         $audit = $this->makeAudit()->entity($type, $id);
@@ -28,7 +27,7 @@ class AuditTest extends AbstractTestCase
         $this->assertEquals($expectedEntities, $audit['entities']);
     }
 
-    public function entityProvider()
+    public static function entityProvider()
     {
         return [
             'string type and string id' => [
@@ -45,7 +44,7 @@ class AuditTest extends AbstractTestCase
                 ],
             ],
             'Auditable type' => [
-                $this->makeAuditable('foo', 123),
+                static::makeAuditable('foo', 123),
                 null,
                 [['type' => 'foo', 'identifier' => 123]],
             ],
@@ -64,8 +63,8 @@ class AuditTest extends AbstractTestCase
             ],
             'array with Auditables' => [
                 [
-                    $this->makeAuditable('server', 123),
-                    $this->makeAuditable('backup', 'abc'),
+                    static::makeAuditable('server', 123),
+                    static::makeAuditable('backup', 'abc'),
                 ],
                 null,
                 [
@@ -324,14 +323,12 @@ class AuditTest extends AbstractTestCase
         return new Audit($auditor);
     }
 
-    private function makeAuditable(string $type = 'type', $identifier = 1): Auditable
+    private static function makeAuditable(string $type = 'type', $identifier = 1): Auditable
     {
         return new class($type, $identifier) implements Auditable
         {
-            public function __construct(string $type, $identifier)
+            public function __construct(public string $type, public $identifier)
             {
-                $this->type = $type;
-                $this->identifier = $identifier;
             }
 
             public function auditorType(): string
