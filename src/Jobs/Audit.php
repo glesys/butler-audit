@@ -32,6 +32,7 @@ class Audit implements ShouldQueue
 
         try {
             Http::withToken(config('butler.audit.token'))
+                ->acceptJson()
                 ->post(config('butler.audit.url'), $this->data)
                 ->throw();
         } catch (RequestException $exception) {
