@@ -19,6 +19,7 @@ class JobTest extends AbstractTestCase
         Http::assertSent(fn ($request)
             => $request->url() === config('butler.audit.url')
             && $request->hasHeader('Authorization', 'Bearer ' . config('butler.audit.token'))
+            && $request->hasHeader('Accept', 'application/json')
             && $request['foo'] === 'bar');
     }
 
