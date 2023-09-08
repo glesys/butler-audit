@@ -87,7 +87,7 @@ class Auditor
             && $callback($data));
     }
 
-    public function correlationId(?string $correlationId = null): string
+    public function correlationId(string $correlationId = null): string
     {
         if (func_num_args() === 1) {
             $this->correlationId = $correlationId;
@@ -96,7 +96,7 @@ class Auditor
         return $this->correlationId ??= request()->header('X-Correlation-ID', (string) str()->uuid());
     }
 
-    public function correlationTrail(?string $correlationTrail = null): ?string
+    public function correlationTrail(string $correlationTrail = null): ?string
     {
         if (func_num_args() === 1) {
             $this->correlationTrail = $correlationTrail;
@@ -127,7 +127,7 @@ class Auditor
         ]);
     }
 
-    public function initiatorResolver(?Closure $resolver = null): ?Closure
+    public function initiatorResolver(Closure $resolver = null): ?Closure
     {
         if (func_num_args() === 1) {
             static::$initiatorResolver = $resolver;
