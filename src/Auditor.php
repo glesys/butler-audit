@@ -51,7 +51,7 @@ class Auditor
         }
     }
 
-    public function assertLogged(string $eventName, Closure $callback = null): void
+    public function assertLogged(string $eventName, ?Closure $callback = null): void
     {
         PHPUnit::assertTrue(
             $this->recorded($eventName, $callback)->isNotEmpty(),
@@ -59,7 +59,7 @@ class Auditor
         );
     }
 
-    public function assertNotLogged(string $eventName, Closure $callback = null): void
+    public function assertNotLogged(string $eventName, ?Closure $callback = null): void
     {
         PHPUnit::assertCount(
             0,
@@ -78,7 +78,7 @@ class Auditor
         PHPUnit::assertCount($count, $this->recorded);
     }
 
-    public function recorded(string $eventName, Closure $callback = null): Collection
+    public function recorded(string $eventName, ?Closure $callback = null): Collection
     {
         $callback = $callback ?: fn () => true;
 
@@ -87,7 +87,7 @@ class Auditor
             && $callback($data));
     }
 
-    public function correlationId(string $correlationId = null): string
+    public function correlationId(?string $correlationId = null): string
     {
         if (func_num_args() === 1) {
             $this->correlationId = $correlationId;
@@ -96,7 +96,7 @@ class Auditor
         return $this->correlationId ??= request()->header('X-Correlation-ID', (string) str()->uuid());
     }
 
-    public function correlationTrail(string $correlationTrail = null): ?string
+    public function correlationTrail(?string $correlationTrail = null): ?string
     {
         if (func_num_args() === 1) {
             $this->correlationTrail = $correlationTrail;
@@ -127,7 +127,7 @@ class Auditor
         ]);
     }
 
-    public function initiatorResolver(Closure $resolver = null): ?Closure
+    public function initiatorResolver(?Closure $resolver = null): ?Closure
     {
         if (func_num_args() === 1) {
             static::$initiatorResolver = $resolver;
