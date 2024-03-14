@@ -99,7 +99,7 @@ class Audit implements ArrayAccess
         return $this;
     }
 
-    public function log(string $event = null, array $eventContext = []): void
+    public function log(?string $event = null, array $eventContext = []): void
     {
         if ($event) {
             $this->event($event, $eventContext);
