@@ -327,9 +327,7 @@ class AuditTest extends AbstractTestCase
     {
         return new class($type, $identifier) implements Auditable
         {
-            public function __construct(public string $type, public $identifier)
-            {
-            }
+            public function __construct(public string $type, public $identifier) {}
 
             public function auditorType(): string
             {

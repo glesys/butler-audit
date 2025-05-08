@@ -18,9 +18,7 @@ class Audit implements ShouldQueue
 
     public $backoff = 16;
 
-    public function __construct(public array $data)
-    {
-    }
+    public function __construct(public array $data) {}
 
     public function handle()
     {
