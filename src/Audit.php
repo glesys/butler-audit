@@ -18,9 +18,7 @@ class Audit implements ArrayAccess
     private string $initiator;
     private array $initiatorContext = [];
 
-    public function __construct(private Auditor $auditor)
-    {
-    }
+    public function __construct(private Auditor $auditor) {}
 
     /**
      * @example entity('user', 1)
