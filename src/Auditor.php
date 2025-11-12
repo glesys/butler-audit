@@ -6,6 +6,7 @@ use Butler\Audit\Jobs\Audit as AuditJob;
 use Butler\Audit\Testing\AuditData;
 use Closure;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Traits\Dumpable;
 use Illuminate\Support\Traits\Macroable;
 use PHPUnit\Framework\Assert as PHPUnit;
 
@@ -20,7 +21,7 @@ use PHPUnit\Framework\Assert as PHPUnit;
  */
 class Auditor
 {
-    use Macroable {
+    use Dumpable, Macroable {
         __call as macroCall;
     }
 
