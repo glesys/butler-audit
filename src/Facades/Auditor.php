@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string correlationTrail(?string $correlationTrail = null)
  * @method static ?\Closure initiatorResolver(?\Closure $resolver)
  *
- * @see \Butler\Audit\Auditor
+ * @see AuditorClass
  */
 class Auditor extends Facade
 {

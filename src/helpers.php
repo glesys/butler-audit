@@ -1,10 +1,14 @@
 <?php
 
+use Butler\Audit\Audit;
+use Butler\Audit\Contracts\Auditable;
+use Butler\Audit\Facades\Auditor;
+
 if (! function_exists('audit')) {
     function audit(
-        string|array|Butler\Audit\Contracts\Auditable $entityType,
+        string|array|Auditable $entityType,
         mixed $entityId = null,
-    ): Butler\Audit\Audit {
-        return Butler\Audit\Facades\Auditor::entity($entityType, $entityId);
+    ): Audit {
+        return Auditor::entity($entityType, $entityId);
     }
 }

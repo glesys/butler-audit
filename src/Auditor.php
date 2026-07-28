@@ -17,7 +17,7 @@ use PHPUnit\Framework\Assert as PHPUnit;
  * @method \Butler\Audit\Audit initiator(string $initiator, array $context = [])
  * @method \Butler\Audit\Audit initiatorContext(string $key, mixed $value)
  *
- * @see \Butler\Audit\Audit
+ * @see Audit
  */
 class Auditor
 {
